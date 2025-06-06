@@ -1,0 +1,17 @@
+[
+  {
+    "name": "DCA dynamique",
+    "enabled": true,
+    "params": { "interval": "1h", "max_drawdown": 0.05 }
+  },
+  {
+    "name": "Scalping volatilité",
+    "enabled": false,
+    "params": { "spread_min": 0.2 }
+  },
+  {
+    "name": "Take Profit / Stop Loss",
+    "enabled": true,
+    "params": { "take_profit": 5, "stop_loss": 2 }
+  }
+]
