@@ -34,6 +34,24 @@
         </ul>
         <div class="mt-6 text-gray-400">Module en cours de développement…</div>
       </div>
+      <script>
+        async function sendTestAlert() {
+          const msg = prompt('Message à envoyer en alerte Telegram ?');
+          if (!msg) return;
+          const res = await fetch('/api/alert', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ message: msg })
+          });
+          const data = await res.json();
+          alert(JSON.stringify(data, null, 2));
+        }
+      </script>
+
+      <div class="mt-8">
+        <h3 class="text-lg font-bold mb-2">Test d'alerte Telegram</h3>
+        <button onclick="sendTestAlert()" class="px-3 py-1 bg-blue-500 text-white rounded">Envoyer une alerte test</button>
+      </div>
     </main>
   </div>
 </body>

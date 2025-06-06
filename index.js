@@ -6,6 +6,7 @@ const binance = require('binance-api-node').default;
 const { analyzeMarket } = require('./analyze-market');
 const { saveAnalysis } = require('./logAnalysis');
 const { runBacktest } = require('./backtest');
+const { sendTelegramAlert } = require('./notifications');
 
 dotenv.config({ path: path.join(__dirname, 'config/.env') });
 
@@ -93,6 +94,14 @@ app.get('/api/backtest', (req, res) => {
   const { symbol = 'BTCUSDT', date, takeProfit = 5, stopLoss = 2 } = req.query;
   if (!date) return res.status(400).json({ error: 'Date requise (YYYY-MM-DD)' });
   const result = runBacktest({ symbol, date, takeProfit: Number(takeProfit), stopLoss: Number(stopLoss) });
+  res.json(result);
+});
+
+// Endpoint pour envoyer une alerte Telegram (test manuel)
+app.post('/api/alert', express.json(), async (req, res) => {
+  const { message } = req.body;
+  if (!message) return res.status(400).json({ error: 'Message requis' });
+  const result = await sendTelegramAlert(message);
   res.json(result);
 });
 
