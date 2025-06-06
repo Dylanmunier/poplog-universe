@@ -24,7 +24,31 @@
       <div id="chart" class="bg-gray-800 rounded-lg p-6 h-64 flex items-center justify-center">
         <span class="text-gray-400">(Graphique à venir)</span>
       </div>
+      <div class="mt-8">
+        <h3 class="text-lg font-bold mb-2">Prix BTC/USDT</h3>
+        <div id="price" class="text-2xl text-yellow-400 mb-4">Chargement...</div>
+        <h3 class="text-lg font-bold mb-2">Analyse IA (Gemini)</h3>
+        <pre id="analysis" class="bg-gray-700 p-4 rounded text-sm">Chargement...</pre>
+      </div>
     </main>
   </div>
+  <script>
+    async function refreshPrice() {
+      const res = await fetch('/api/price?symbol=BTCUSDT');
+      const data = await res.json();
+      document.getElementById('price').textContent = data.price || 'Erreur';
+    }
+
+    async function refreshAnalysis() {
+      const res = await fetch('/api/analyze?symbol=BTCUSDT');
+      const data = await res.json();
+      document.getElementById('analysis').textContent = JSON.stringify(data, null, 2);
+    }
+
+    refreshPrice();
+    refreshAnalysis();
+    setInterval(refreshPrice, 10000);
+    setInterval(refreshAnalysis, 30000);
+  </script>
 </body>
 </html>
