@@ -1,148 +1,197 @@
 <!-- Backtest & Audit - Page dédiée -->
-<!DOCTYPE html>
+<!doctype html>
 <html lang="fr">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Backtest & Audit</title>
-  <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
-</head>
-<body class="bg-gray-900 text-white">
-  <div class="flex h-screen">
-    <aside class="w-64 bg-gray-800 p-4 flex flex-col">
-      <h1 class="text-2xl font-bold mb-8">Copilot Trading</h1>
-      <nav class="flex-1">
-        <ul>
-          <li class="mb-4"><a href="/index.html" class="hover:text-yellow-400">Dashboard</a></li>
-          <li class="mb-4"><a href="/strategies.html" class="hover:text-yellow-400">Stratégies</a></li>
-          <li class="mb-4"><a href="/logs.html" class="hover:text-yellow-400">Logs</a></li>
-          <li class="mb-4"><a href="/config.html" class="hover:text-yellow-400">Configuration</a></li>
-          <li class="mb-4"><a href="/alerts.html" class="hover:text-yellow-400">Alertes</a></li>
-          <li class="mb-4"><a href="/backtest.html" class="text-yellow-400 font-bold">Backtest</a></li>
-        </ul>
-      </nav>
-    </aside>
-    <main class="flex-1 p-8">
-      <h2 class="text-xl font-semibold mb-4">Backtest & Audit de performance</h2>
-      <div class="bg-gray-800 rounded-lg p-6">
-        <p class="mb-4">(À venir) Simulation de stratégies sur l’historique, audit des performances, visualisation des résultats.</p>
-        <ul class="list-disc ml-6">
-          <li>Simulation sur BTC/USDT, ETH/USDT, etc.</li>
-          <li>Affichage du PnL, drawdown, taux de réussite</li>
-          <li>Comparaison entre stratégies IA et manuelles</li>
-        </ul>
-        <div class="mt-6 text-gray-400">Module en cours de développement…</div>
-      </div>
-      <script>
-      async function runBacktestUI() {
-        const symbol = document.getElementById('symbol').value;
-        const date = document.getElementById('backtest-date').value;
-        const tp = document.getElementById('backtest-tp').value;
-        const sl = document.getElementById('backtest-sl').value;
-        if (!date) return alert('Sélectionnez une date.');
-        const res = await fetch(`/api/backtest?symbol=${symbol}&date=${date}&takeProfit=${tp}&stopLoss=${sl}`);
-        const data = await res.json();
-        document.getElementById('backtest-result').textContent = JSON.stringify(data, null, 2);
-      }
-      async function generateReportUI() {
-        const symbol = document.getElementById('symbol').value;
-        const date = document.getElementById('report-date').value;
-        if (!date) return alert('Sélectionnez une date.');
-        const res = await fetch(`/api/report?symbol=${symbol}&date=${date}`);
-        const md = await res.text();
-        document.getElementById('report-result').textContent = md;
-      }
-      async function runSimulationUI() {
-        const date = document.getElementById('sim-date').value;
-        const tp = document.getElementById('sim-tp').value;
-        const sl = document.getElementById('sim-sl').value;
-        const sel = document.getElementById('sim-symbols');
-        const symbols = Array.from(sel.selectedOptions).map(o=>o.value).join(',');
-        if (!date || !symbols) return alert('Sélectionnez une date et au moins une paire.');
-        const res = await fetch(`/api/simulation?symbols=${symbols}&date=${date}&takeProfit=${tp}&stopLoss=${sl}`);
-        const data = await res.json();
-        const tbody = document.getElementById('sim-tbody');
-        tbody.innerHTML = '';
-        if (data.results && data.results.length) {
-          data.results.forEach(r => {
-            ['ia','manual','real'].forEach(mode => {
-              const d = r[mode];
-              tbody.innerHTML += `<tr><td>${r.symbol}</td><td>${mode}</td><td>${d.pnl ?? '-'}</td><td>${d.maxDrawdown ?? '-'}</td><td>${d.winrate ?? '-'}</td><td>${d.nbTrades ?? '-'}</td><td>${d.nbWin ?? '-'}</td><td>${d.nbLoss ?? '-'}</td></tr>`;
-            });
-          });
-          document.getElementById('sim-table').style.display = '';
-          document.getElementById('sim-empty').style.display = 'none';
-        } else {
-          document.getElementById('sim-table').style.display = 'none';
-          document.getElementById('sim-empty').style.display = '';
-        }
-      }
-      // Préremplir la date du jour
-      document.addEventListener('DOMContentLoaded', ()=>{
-        const today = new Date().toISOString().slice(0,10);
-        document.getElementById('sim-date').value = today;
-      });
-      </script>
-      <div class="mt-8">
-        <h3 class="text-lg font-bold mb-2">Backtest rapide</h3>
-        <div class="bg-gray-800 rounded-lg p-6 mb-4">
-          <label for="backtest-date" class="font-bold">Date :</label>
-          <input type="date" id="backtest-date" class="bg-gray-700 text-white rounded p-1 ml-2 mb-2" />
-          <label for="backtest-tp" class="font-bold ml-4">Take Profit (%) :</label>
-          <input type="number" id="backtest-tp" value="5" class="bg-gray-700 text-white rounded p-1 ml-2 mb-2" style="width:70px;" />
-          <label for="backtest-sl" class="font-bold ml-4">Stop Loss (%) :</label>
-          <input type="number" id="backtest-sl" value="2" class="bg-gray-700 text-white rounded p-1 ml-2 mb-2" style="width:70px;" />
-          <button onclick="runBacktestUI()" class="ml-4 px-3 py-1 bg-yellow-500 text-black rounded">Lancer le backtest</button>
-          <pre id="backtest-result" class="bg-gray-700 p-4 rounded text-sm mt-4">Résultat…</pre>
-        </div>
-      </div>
-      <div class="mt-8">
-        <h3 class="text-lg font-bold mb-2">Générer un rapport utilisateur</h3>
-        <div class="bg-gray-800 rounded-lg p-6 mb-4">
-          <label for="report-date" class="font-bold">Date :</label>
-          <input type="date" id="report-date" class="bg-gray-700 text-white rounded p-1 ml-2 mb-2" />
-          <button onclick="generateReportUI()" class="ml-4 px-3 py-1 bg-yellow-500 text-black rounded">Générer le rapport</button>
-          <pre id="report-result" class="bg-gray-700 p-4 rounded text-sm mt-4">Rapport…</pre>
-        </div>
-      </div>
-      <div class="mt-8">
-        <h3 class="text-lg font-bold mb-2">Simulation multi-paires</h3>
-        <div class="bg-gray-800 rounded-lg p-6 mb-4">
-          <label for="sim-date" class="font-bold">Date :</label>
-          <input type="date" id="sim-date" class="bg-gray-700 text-white rounded p-1 ml-2 mb-2" />
-          <label for="sim-symbols" class="font-bold ml-4">Paires :</label>
-          <select id="sim-symbols" multiple size="3" class="bg-gray-700 text-white rounded p-1 ml-2 mb-2">
-            <option value="BTCUSDT" selected>BTC/USDT</option>
-            <option value="ETHUSDT" selected>ETH/USDT</option>
-            <option value="BNBUSDT">BNB/USDT</option>
-            <option value="SOLUSDT">SOL/USDT</option>
-          </select>
-          <label for="sim-tp" class="font-bold ml-4">Take Profit (%) :</label>
-          <input type="number" id="sim-tp" value="5" class="bg-gray-700 text-white rounded p-1 ml-2 mb-2" style="width:70px;" />
-          <label for="sim-sl" class="font-bold ml-4">Stop Loss (%) :</label>
-          <input type="number" id="sim-sl" value="2" class="bg-gray-700 text-white rounded p-1 ml-2 mb-2" style="width:70px;" />
-          <button onclick="runSimulationUI()" class="ml-4 px-3 py-1 bg-yellow-500 text-black rounded">Lancer la simulation</button>
-          <div class="overflow-x-auto mt-6">
-            <table class="min-w-full bg-gray-800 rounded" id="sim-table" style="display:none;">
-              <thead>
-                <tr>
-                  <th class="px-2">Paire</th>
-                  <th class="px-2">Mode</th>
-                  <th class="px-2">PnL (%)</th>
-                  <th class="px-2">Drawdown max (%)</th>
-                  <th class="px-2">Winrate (%)</th>
-                  <th class="px-2">Nb trades</th>
-                  <th class="px-2">Nb Win</th>
-                  <th class="px-2">Nb Loss</th>
-                </tr>
-              </thead>
-              <tbody id="sim-tbody"></tbody>
-            </table>
-            <div id="sim-empty" class="text-gray-400 mt-4">Aucune simulation lancée.</div>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Backtest & Audit</title>
+    <link
+      href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css"
+      rel="stylesheet"
+    />
+  </head>
+  <body class="bg-gray-900 text-white">
+    <div class="flex h-screen">
+      <aside class="w-64 bg-gray-800 p-4 flex flex-col">
+        <h1 class="text-2xl font-bold mb-8">Copilot Trading</h1>
+        <nav class="flex-1">
+          <ul>
+            <li class="mb-4">
+              <a href="/index.html" class="hover:text-yellow-400">Dashboard</a>
+            </li>
+            <li class="mb-4">
+              <a href="/strategies.html" class="hover:text-yellow-400"
+                >Stratégies</a
+              >
+            </li>
+            <li class="mb-4">
+              <a href="/logs.html" class="hover:text-yellow-400">Logs</a>
+            </li>
+            <li class="mb-4">
+              <a href="/config.html" class="hover:text-yellow-400"
+                >Configuration</a
+              >
+            </li>
+            <li class="mb-4">
+              <a href="/alerts.html" class="hover:text-yellow-400">Alertes</a>
+            </li>
+            <li class="mb-4">
+              <a href="/backtest.html" class="text-yellow-400 font-bold"
+                >Backtest</a
+              >
+            </li>
+          </ul>
+        </nav>
+      </aside>
+      <main class="flex-1 p-8">
+        <h2 class="text-xl font-semibold mb-4">
+          Backtest & Audit de performance
+        </h2>
+        <div class="bg-gray-800 rounded-lg p-6">
+          <p class="mb-4">
+            (À venir) Simulation de stratégies sur l’historique, audit des
+            performances, visualisation des résultats.
+          </p>
+          <ul class="list-disc ml-6">
+            <li>Simulation sur BTC/USDT, ETH/USDT, etc.</li>
+            <li>Affichage du PnL, drawdown, taux de réussite</li>
+            <li>Comparaison entre stratégies IA et manuelles</li>
+          </ul>
+          <div class="mt-6 text-gray-400">
+            Module en cours de développement…
           </div>
         </div>
-      </div>
-    </main>
-  </div>
-</body>
+        <script>
+          async function runBacktestUI() {
+            const symbol = document.getElementById("symbol").value;
+            const date = document.getElementById("backtest-date").value;
+            const tp = document.getElementById("backtest-tp").value;
+            const sl = document.getElementById("backtest-sl").value;
+            if (!date) return alert("Sélectionnez une date.");
+            const res = await fetch(
+              `/api/backtest?symbol=${symbol}&date=${date}&takeProfit=${tp}&stopLoss=${sl}`,
+            );
+            const data = await res.json();
+            document.getElementById("backtest-result").textContent =
+              JSON.stringify(data, null, 2);
+          }
+          async function generateReportUI() {
+            const symbol = document.getElementById("symbol").value;
+            const date = document.getElementById("report-date").value;
+            if (!date) return alert("Sélectionnez une date.");
+            const res = await fetch(
+              `/api/report?symbol=${symbol}&date=${date}`,
+            );
+            const md = await res.text();
+            document.getElementById("report-result").textContent = md;
+          }
+          async function runSimulationUI() {
+            const date = document.getElementById('sim-date').value;
+            const symbols = document.getElementById('sim-symbols').value;
+            const tp = document.getElementById('sim-tp').value;
+            const sl = document.getElementById('sim-sl').value;
+            if (!date) return alert('Sélectionnez une date.');
+            const res = await fetch(`/api/simulation?symbols=${symbols}&date=${date}&takeProfit=${tp}&stopLoss=${sl}`);
+            const data = await res.json();
+            if (!data.results) return document.getElementById('sim-result').textContent = JSON.stringify(data, null, 2);
+            let html = `<table class='min-w-full bg-gray-800 rounded'><thead><tr><th class='px-2'>Paire</th><th class='px-2'>Mode</th><th class='px-2'>PnL (%)</th><th class='px-2'>Drawdown max (%)</th><th class='px-2'>Winrate (%)</th><th class='px-2'>Trades</th><th class='px-2'>Wins</th><th class='px-2'>Losses</th></tr></thead><tbody>`;
+            data.results.forEach(r => {
+              ['ia','manual','real'].forEach(mode => {
+                const m = r[mode];
+                html += `<tr><td>${r.symbol}</td><td>${mode}</td><td>${m.pnl ?? '-'}</td><td>${m.maxDrawdown ?? '-'}</td><td>${m.winrate ?? '-'}</td><td>${m.nbTrades ?? '-'}</td><td>${m.nbWin ?? '-'}</td><td>${m.nbLoss ?? '-'}</td></tr>`;
+              });
+            });
+            html += '</tbody></table>';
+            document.getElementById('sim-result').innerHTML = html;
+          }
+          // Préremplir la date du jour
+          document.addEventListener("DOMContentLoaded", () => {
+            const today = new Date().toISOString().slice(0, 10);
+            document.getElementById("sim-date").value = today;
+          });
+        </script>
+        <div class="mt-8">
+          <h3 class="text-lg font-bold mb-2">Backtest rapide</h3>
+          <div class="bg-gray-800 rounded-lg p-6 mb-4">
+            <label for="backtest-date" class="font-bold">Date :</label>
+            <input
+              type="date"
+              id="backtest-date"
+              class="bg-gray-700 text-white rounded p-1 ml-2 mb-2"
+            />
+            <label for="backtest-tp" class="font-bold ml-4"
+              >Take Profit (%) :</label
+            >
+            <input
+              type="number"
+              id="backtest-tp"
+              value="5"
+              class="bg-gray-700 text-white rounded p-1 ml-2 mb-2"
+              style="width: 70px"
+            />
+            <label for="backtest-sl" class="font-bold ml-4"
+              >Stop Loss (%) :</label
+            >
+            <input
+              type="number"
+              id="backtest-sl"
+              value="2"
+              class="bg-gray-700 text-white rounded p-1 ml-2 mb-2"
+              style="width: 70px"
+            />
+            <button
+              onclick="runBacktestUI()"
+              class="ml-4 px-3 py-1 bg-yellow-500 text-black rounded"
+            >
+              Lancer le backtest
+            </button>
+            <pre
+              id="backtest-result"
+              class="bg-gray-700 p-4 rounded text-sm mt-4"
+            >
+Résultat…</pre
+            >
+          </div>
+        </div>
+        <div class="mt-8">
+          <h3 class="text-lg font-bold mb-2">Générer un rapport utilisateur</h3>
+          <div class="bg-gray-800 rounded-lg p-6 mb-4">
+            <label for="report-date" class="font-bold">Date :</label>
+            <input
+              type="date"
+              id="report-date"
+              class="bg-gray-700 text-white rounded p-1 ml-2 mb-2"
+            />
+            <button
+              onclick="generateReportUI()"
+              class="ml-4 px-3 py-1 bg-yellow-500 text-black rounded"
+            >
+              Générer le rapport
+            </button>
+            <pre
+              id="report-result"
+              class="bg-gray-700 p-4 rounded text-sm mt-4"
+            >
+Rapport…</pre
+            >
+          </div>
+        </div>
+        <div class="mt-8">
+          <h3 class="text-lg font-bold mb-2">Simulation multi-paires avancée</h3>
+          <div class="bg-gray-800 rounded-lg p-6 mb-4">
+            <label for="sim-date" class="font-bold">Date :</label>
+            <input type="date" id="sim-date" class="bg-gray-700 text-white rounded p-1 ml-2 mb-2" />
+            <label for="sim-symbols" class="font-bold ml-4">Paires (séparées par virgule) :</label>
+            <input type="text" id="sim-symbols" value="BTCUSDT,ETHUSDT" class="bg-gray-700 text-white rounded p-1 ml-2 mb-2" style="width:200px;" />
+            <label for="sim-tp" class="font-bold ml-4">Take Profit (%) :</label>
+            <input type="number" id="sim-tp" value="5" class="bg-gray-700 text-white rounded p-1 ml-2 mb-2" style="width:70px;" />
+            <label for="sim-sl" class="font-bold ml-4">Stop Loss (%) :</label>
+            <input type="number" id="sim-sl" value="2" class="bg-gray-700 text-white rounded p-1 ml-2 mb-2" style="width:70px;" />
+            <button onclick="runSimulationUI()" class="ml-4 px-3 py-1 bg-yellow-500 text-black rounded">Lancer la simulation</button>
+            <div id="sim-result" class="bg-gray-700 p-4 rounded text-sm mt-4 overflow-x-auto">Résultat…</div>
+          </div>
+        </div>
+      </main>
+    </div>
+  </body>
 </html>
