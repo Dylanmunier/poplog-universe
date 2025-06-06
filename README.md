@@ -98,6 +98,10 @@ Ces fichiers seront utilisés comme **copilotes de décision** pour la stratégi
 
 ---
 
-Pour suivre l'évolution, consultez le fichier `roadmap.md`.
+Pour suivre l'évolution, consultez le fichier `roadmap.md`. 'copilot' de trading personnel, ce projet est conçu pour être un outil d'apprentissage et de test personnel, pas un produit commercial.
+
+---
+
+Projet personnel, non destiné à un usage commercial. **Utilisez-le à vos risques et périls.**
 
 **Projet personnel sous licence privée, à ne pas utiliser en production sans vérification.**
