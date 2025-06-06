@@ -202,6 +202,47 @@ Tu peux visualiser les logs dans une future UI (chart historique, table, etc.).
 
 Tu bases tes décisions sur l’historique d’analyse de ton IA pour booster ton ROI.
 
+## ✅ Avancement Roadmap (checklist automatique)
+
+- [x] Créer un dépôt Git pour le projet.
+- [x] Choisir un langage principal (Node.js)
+- [x] Configurer un `.env` sécurisé pour les clés API Binance.
+- [x] Installer les SDK/API nécessaires :
+  - [x] Binance API
+  - [x] Google AI (Gemini)
+- [x] Créer un fichier de config pour les stratégies (JSON)
+- [x] Authentification via API Key/Secret.
+- [x] Endpoint pour récupérer :
+  - [x] Solde actuel
+  - [x] Prix en temps réel
+  - [ ] Historique des transactions (à faire)
+- [x] Test d’envoi d’un ordre d’achat et de vente (simulation OK)
+- [x] Envoyer les données de marché à Google AI pour analyse :
+  - [x] Tendance
+  - [x] Risque estimé
+  - [x] Suggestions de position
+- [x] Intégrer un système de requêtes régulières (UI + backend)
+- [x] Afficher la stratégie recommandée (UI)
+- [x] Créer un moteur de stratégie local (brique IA + logs)
+- [x] Journalisation des actions locales dans un fichier `.log`.
+- [x] Interface locale avec contrôle manuel (dashboard web)
+- [ ] Historique des transactions (à faire)
+- [ ] Alertes (à faire)
+- [ ] Notifications (à faire)
+- [ ] Backtest en live (à faire)
+- [ ] Simulation multi-paires (à faire)
+- [ ] Audit des performances (à faire)
+- [ ] Packaging final (à faire)
+- [ ] Documentation utilisateur (à faire)
+
+## Prochaine étape Roadmap
+
+- Ajouter un endpoint pour l’historique des transactions Binance (`/api/trades`)
+- Préparer la structure pour alertes et notifications (Telegram/mail/Discord)
+- Préparer le backtest et l’audit de performance
+
+---
+
 ## 🚀 Roadmap                  
 ### Étapes de développement
 Toujours mettre à jour le fichier `roadmap.md` pour suivre l'évolution du projet.

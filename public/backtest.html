@@ -1,0 +1,64 @@
+<!-- Backtest & Audit - Page dédiée -->
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Backtest & Audit</title>
+  <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+</head>
+<body class="bg-gray-900 text-white">
+  <div class="flex h-screen">
+    <aside class="w-64 bg-gray-800 p-4 flex flex-col">
+      <h1 class="text-2xl font-bold mb-8">Copilot Trading</h1>
+      <nav class="flex-1">
+        <ul>
+          <li class="mb-4"><a href="/index.html" class="hover:text-yellow-400">Dashboard</a></li>
+          <li class="mb-4"><a href="/strategies.html" class="hover:text-yellow-400">Stratégies</a></li>
+          <li class="mb-4"><a href="/logs.html" class="hover:text-yellow-400">Logs</a></li>
+          <li class="mb-4"><a href="/config.html" class="hover:text-yellow-400">Configuration</a></li>
+          <li class="mb-4"><a href="/alerts.html" class="hover:text-yellow-400">Alertes</a></li>
+          <li class="mb-4"><a href="/backtest.html" class="text-yellow-400 font-bold">Backtest</a></li>
+        </ul>
+      </nav>
+    </aside>
+    <main class="flex-1 p-8">
+      <h2 class="text-xl font-semibold mb-4">Backtest & Audit de performance</h2>
+      <div class="bg-gray-800 rounded-lg p-6">
+        <p class="mb-4">(À venir) Simulation de stratégies sur l’historique, audit des performances, visualisation des résultats.</p>
+        <ul class="list-disc ml-6">
+          <li>Simulation sur BTC/USDT, ETH/USDT, etc.</li>
+          <li>Affichage du PnL, drawdown, taux de réussite</li>
+          <li>Comparaison entre stratégies IA et manuelles</li>
+        </ul>
+        <div class="mt-6 text-gray-400">Module en cours de développement…</div>
+      </div>
+      <script>
+      async function runBacktestUI() {
+        const symbol = document.getElementById('symbol').value;
+        const date = document.getElementById('backtest-date').value;
+        const tp = document.getElementById('backtest-tp').value;
+        const sl = document.getElementById('backtest-sl').value;
+        if (!date) return alert('Sélectionnez une date.');
+        const res = await fetch(`/api/backtest?symbol=${symbol}&date=${date}&takeProfit=${tp}&stopLoss=${sl}`);
+        const data = await res.json();
+        document.getElementById('backtest-result').textContent = JSON.stringify(data, null, 2);
+      }
+      </script>
+      <div class="mt-8">
+        <h3 class="text-lg font-bold mb-2">Backtest rapide</h3>
+        <div class="bg-gray-800 rounded-lg p-6 mb-4">
+          <label for="backtest-date" class="font-bold">Date :</label>
+          <input type="date" id="backtest-date" class="bg-gray-700 text-white rounded p-1 ml-2 mb-2" />
+          <label for="backtest-tp" class="font-bold ml-4">Take Profit (%) :</label>
+          <input type="number" id="backtest-tp" value="5" class="bg-gray-700 text-white rounded p-1 ml-2 mb-2" style="width:70px;" />
+          <label for="backtest-sl" class="font-bold ml-4">Stop Loss (%) :</label>
+          <input type="number" id="backtest-sl" value="2" class="bg-gray-700 text-white rounded p-1 ml-2 mb-2" style="width:70px;" />
+          <button onclick="runBacktestUI()" class="ml-4 px-3 py-1 bg-yellow-500 text-black rounded">Lancer le backtest</button>
+          <pre id="backtest-result" class="bg-gray-700 p-4 rounded text-sm mt-4">Résultat…</pre>
+        </div>
+      </div>
+    </main>
+  </div>
+</body>
+</html>

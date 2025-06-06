@@ -13,9 +13,12 @@
       <h1 class="text-2xl font-bold mb-8">Copilot Trading</h1>
       <nav class="flex-1">
         <ul>
-          <li class="mb-4"><a href="#" class="hover:text-yellow-400">Dashboard</a></li>
-          <li class="mb-4"><a href="#" class="hover:text-yellow-400">Stratégies</a></li>
-          <li class="mb-4"><a href="#" class="hover:text-yellow-400">Logs</a></li>
+          <li class="mb-4"><a href="/index.html" class="hover:text-yellow-400">Dashboard</a></li>
+          <li class="mb-4"><a href="/strategies.html" class="hover:text-yellow-400">Stratégies</a></li>
+          <li class="mb-4"><a href="/logs.html" class="hover:text-yellow-400">Logs</a></li>
+          <li class="mb-4"><a href="/config.html" class="hover:text-yellow-400">Configuration</a></li>
+          <li class="mb-4"><a href="/alerts.html" class="hover:text-yellow-400">Alertes</a></li>
+          <li class="mb-4"><a href="/backtest.html" class="hover:text-yellow-400">Backtest</a></li>
         </ul>
       </nav>
     </aside>
@@ -24,31 +27,157 @@
       <div id="chart" class="bg-gray-800 rounded-lg p-6 h-64 flex items-center justify-center">
         <span class="text-gray-400">(Graphique à venir)</span>
       </div>
+
       <div class="mt-8">
-        <h3 class="text-lg font-bold mb-2">Prix BTC/USDT</h3>
+        <label for="symbol" class="font-bold">Paire :</label>
+        <select id="symbol" class="bg-gray-700 text-white rounded p-1 ml-2" onchange="changeSymbol(this)">
+          <option value="BTCUSDT">BTC/USDT</option>
+          <option value="ETHUSDT">ETH/USDT</option>
+          <option value="BNBUSDT">BNB/USDT</option>
+          <option value="SOLUSDT">SOL/USDT</option>
+        </select>
+        <button onclick="forceAnalyze()" class="ml-4 px-3 py-1 bg-yellow-500 text-black rounded">Forcer une analyse</button>
+
+        <h3 class="text-lg font-bold mb-2 mt-6">Prix <span id="pair-label">BTC/USDT</span></h3>
         <div id="price" class="text-2xl text-yellow-400 mb-4">Chargement...</div>
         <h3 class="text-lg font-bold mb-2">Analyse IA (Gemini)</h3>
         <pre id="analysis" class="bg-gray-700 p-4 rounded text-sm">Chargement...</pre>
+
+        <h3 class="text-lg font-bold mb-2 mt-6">Historique des analyses (10 dernières)</h3>
+        <div class="overflow-x-auto">
+          <table class="min-w-full bg-gray-800 rounded">
+            <thead>
+              <tr>
+                <th class="px-2">Horodatage</th>
+                <th class="px-2">Paire</th>
+                <th class="px-2">Tendance</th>
+                <th class="px-2">Confiance</th>
+                <th class="px-2">Risque</th>
+                <th class="px-2">Ordre</th>
+              </tr>
+            </thead>
+            <tbody id="logs-tbody"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <div class="mt-8">
+        <h3 class="text-lg font-bold mb-2 mt-6">Graphique Confiance IA (20 dernières analyses)</h3>
+        <div class="bg-gray-800 rounded-lg p-4">
+          <canvas id="chart-canvas" height="80"></canvas>
+        </div>
+      </div>
+
+      <div class="mt-8">
+        <h3 class="text-lg font-bold mb-2">Solde Binance</h3>
+        <div class="overflow-x-auto mb-4">
+          <table class="min-w-full bg-gray-800 rounded">
+            <thead>
+              <tr><th class="px-2">Asset</th><th class="px-2">Disponible</th><th class="px-2">Bloqué</th></tr>
+            </thead>
+            <tbody id="balance-tbody"></tbody>
+          </table>
+        </div>
+        <button onclick="sendOrder('buy')" class="px-3 py-1 bg-green-500 text-black rounded mr-2">Acheter</button>
+        <button onclick="sendOrder('sell')" class="px-3 py-1 bg-red-500 text-black rounded">Vendre</button>
+      </div>
+
+      <div class="mt-8">
+        <h3 class="text-lg font-bold mb-2">Historique des transactions (10 dernières)</h3>
+        <div class="overflow-x-auto mb-4">
+          <table class="min-w-full bg-gray-800 rounded">
+            <thead>
+              <tr><th class="px-2">Date</th><th class="px-2">Paire</th><th class="px-2">Type</th><th class="px-2">Quantité</th><th class="px-2">Prix</th></tr>
+            </thead>
+            <tbody id="trades-tbody"></tbody>
+          </table>
+        </div>
       </div>
     </main>
   </div>
-  <script>
-    async function refreshPrice() {
-      const res = await fetch('/api/price?symbol=BTCUSDT');
-      const data = await res.json();
-      document.getElementById('price').textContent = data.price || 'Erreur';
-    }
+  <!-- Chart.js CDN -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script src="/api/chart.js"></script>
+<script>
+let currentSymbol = 'BTCUSDT';
 
-    async function refreshAnalysis() {
-      const res = await fetch('/api/analyze?symbol=BTCUSDT');
-      const data = await res.json();
-      document.getElementById('analysis').textContent = JSON.stringify(data, null, 2);
-    }
+async function refreshPrice() {
+  const res = await fetch(`/api/price?symbol=${currentSymbol}`);
+  const data = await res.json();
+  document.getElementById('price').textContent = data.price || 'Erreur';
+}
 
-    refreshPrice();
-    refreshAnalysis();
-    setInterval(refreshPrice, 10000);
-    setInterval(refreshAnalysis, 30000);
+async function refreshAnalysis() {
+  const res = await fetch(`/api/analyze?symbol=${currentSymbol}`);
+  const data = await res.json();
+  document.getElementById('analysis').textContent = JSON.stringify(data, null, 2);
+  refreshLogs();
+}
+
+async function refreshLogs() {
+  const res = await fetch(`/logs/analysis/${new Date().toISOString().slice(0,10)}.log`);
+  if (!res.ok) return;
+  const raw = await res.text();
+  try {
+    const arr = JSON.parse('[' + raw.trim().replace(/,$/, '') + ']');
+    const tbody = document.getElementById('logs-tbody');
+    tbody.innerHTML = arr.reverse().slice(0,10).map(e => `<tr><td>${e.timestamp}</td><td>${e.symbol}</td><td>${e.tendance||e.trend||'-'}</td><td>${e.confiance||e.confidence||'-'}</td><td>${e.risque||e.risk||'-'}</td><td>${e.ordre?.type||e.recommendation||'-'}</td></tr>`).join('');
+    // Affichage graphique de la confiance IA
+    const labels = arr.slice(-20).map(e => e.timestamp.split('T')[1].slice(0,5));
+    const data = arr.slice(-20).map(e => e.confiance||e.confidence||0);
+    if (window.renderLineChart) {
+      renderLineChart(document.getElementById('chart-canvas').getContext('2d'), labels, data, 'Confiance IA (%)');
+    }
+  } catch {}
+}
+
+async function refreshBalance() {
+  const res = await fetch('/api/balance');
+  const data = await res.json();
+  const tbody = document.getElementById('balance-tbody');
+  tbody.innerHTML = (data.balances||[]).map(b => `<tr><td>${b.asset}</td><td>${b.free}</td><td>${b.locked}</td></tr>`).join('');
+}
+
+async function sendOrder(side) {
+  const symbol = document.getElementById('symbol').value;
+  const qty = prompt(`Quantité à ${side} sur ${symbol} ?`);
+  if (!qty) return;
+  const res = await fetch('/api/order', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ symbol, side: side.toUpperCase(), quantity: qty })
+  });
+  const data = await res.json();
+  alert(JSON.stringify(data, null, 2));
+  refreshBalance();
+}
+
+async function refreshTrades() {
+  const symbol = document.getElementById('symbol').value;
+  const res = await fetch(`/api/trades?symbol=${symbol}`);
+  const data = await res.json();
+  const tbody = document.getElementById('trades-tbody');
+  tbody.innerHTML = (data.trades||[]).reverse().slice(0,10).map(t => `<tr><td>${t.time ? new Date(t.time).toLocaleString() : '-'}</td><td>${t.symbol}</td><td>${t.side||t.isBuyer?'BUY':'SELL'}</td><td>${t.qty||t.qty}</td><td>${t.price}</td></tr>`).join('');
+}
+
+function changeSymbol(sel) {
+  currentSymbol = sel.value;
+  refreshPrice();
+  refreshAnalysis();
+}
+
+function forceAnalyze() {
+  refreshAnalysis();
+}
+
+refreshPrice();
+refreshAnalysis();
+refreshBalance();
+refreshTrades();
+setInterval(refreshPrice, 10000);
+setInterval(refreshAnalysis, 30000);
+setInterval(refreshBalance, 30000);
+setInterval(refreshTrades, 30000);
   </script>
 </body>
 </html>
