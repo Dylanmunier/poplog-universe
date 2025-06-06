@@ -50,3 +50,8 @@ app.get('/api/ping', (_req, res) => res.json({ status: 'ok' }));
 app.listen(PORT, () => {
   console.log(`Serveur backend démarré sur le port ${PORT}`);
 });
+
+async function analyzeMarket({ symbol, price }) {
+  const fetch = (...args) => import('node-fetch').then(mod => mod.default)(...args);
+  // ...suite du code...
+}

@@ -1,5 +1,4 @@
 // Module d'appel à Google Gemini (Vertex AI ou Gemini API)
-const fetch = require('node-fetch');
 const dotenv = require('dotenv');
 dotenv.config({ path: __dirname + '/config/.env' });
 
@@ -8,6 +7,7 @@ const GEMINI_MODEL = process.env.GOOGLE_AI_MODEL || 'gemini-2.0-flash';
 
 async function analyzeMarket({ symbol, price }) {
   // Prompt simple, à enrichir selon la stratégie
+  const fetch = (...args) => import('node-fetch').then(mod => mod.default)(...args);
   const prompt = `Analyse la tendance crypto pour ${symbol} (prix actuel: ${price}). Donne une tendance (haussière/baissière/neutre), un score de confiance (0-100), un risque (0-10), et une suggestion d'ordre (buy/sell/hold). Réponds en JSON compact.`;
 
   const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${GEMINI_MODEL}:generateContent?key=${GEMINI_API_KEY}`,
