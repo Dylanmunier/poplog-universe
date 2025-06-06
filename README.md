@@ -1,62 +1,89 @@
 # poplog-universe
  Universe – Planification du développement
 
-🧭 README - Exchange Personnel Automatisé (Node.js + Binance API + Google AI)
+# 🗺️ README - Exchange Personnel Automatisé (Node.js + Binance API + Google AI)
 
-🌟 Objectif du projet
+## 🌟 Objectif du projet
 
-Créer une application personnelle permettant de se connecter à Binance via API, d'exécuter des tâches de trading à distance sans base de données, et d'utiliser Google AI pour analyser les cryptos et appliquer des stratégies automatisées.
+Concevoir un exchange personnel qui permet :
 
-📅 Roadmap de développement
+* de s’authentifier localement (sans base de données),
+* d'interagir avec l’API Binance pour lire les données et envoyer des ordres,
+* d'utiliser Google AI (via Gemini API) pour analyser les marchés,
+* et de déployer le tout facilement pour exécuter des tâches à distance via une interface simple.
 
-✅ Phase 1 - Base de l'application
+---
 
+## 📅 Roadmap de développement
 
+### ✅ Phase 1 - Squelette de l'application
 
-🔧 Phase 2 - Intégration des APIs
+* [x] Initialiser projet Node.js
+* [x] Configurer le backend Express (dossier `backend/`)
+* [x] Créer une authentification basée sur `USERNAME` et `PASSWORD` (.env)
+* [x] Ajouter les clés `BINANCE_API_KEY` et `GOOGLE_AI_API_KEY` dans `.env`
+* [x] Créer le frontend avec HTML + TailwindCSS (dossier `frontend/`)
 
+### 🔧 Phase 2 - Intégration des APIs
 
+* [ ] Connecter l’API Binance (lecture solde, prix des actifs, exécution d’ordres)
+* [ ] Intégrer Google AI (Gemini/Vertex AI) pour l’analyse de tendance
+* [ ] Construire une fonction d’analyse automatisée qui utilise les données de Binance et Google AI
 
-⚖️ Phase 3 - Moteur de stratégie
+### ⚖️ Phase 3 - Stratege et automatisation
 
+* [ ] Définir des stratégies simples (take profit, stop loss, DCA)
+* [ ] Lancer automatiquement les ordres Binance selon ces règles
+* [ ] Gérer l’exécution en asynchrone
 
+### 🚨 Phase 4 - Interface de contrôle
 
-🚨 Phase 4 - Sécurité et contrôle utilisateur
+* [ ] Créer un dashboard basique (HTML/Tailwind)
+* [ ] Contrôler l’activation des stratégies depuis l’interface
+* [ ] Ajouter un système de logs (fichier local .log)
 
+### 🚀 Phase 5 - Déploiement et tests
 
+* [ ] Tester les appels API avec sandbox Binance
+* [ ] Lancer en condition réelle avec surveillance active
+* [ ] Déployer sur serveur perso / cloud avec Node.js en mode service
 
-🚀 Phase 5 - Finalisation et tests
+---
 
+## 📊 Structure du projet
 
+```
+backend/           # Serveur Express
+frontend/          # Interface utilisateur en HTML + TailwindCSS
+.env               # Fichier d’environnement (jamais versionné)
+README.md          # Document actuel
+package.json       # Dépendances Node.js
+```
 
-📊 Fichiers et dossiers principaux
+---
 
-backend/           # Serveur Express Node.js
-frontend/          # Fichiers HTML/CSS avec Tailwind
-.env               # Données sensibles (à ne jamais versionner)
-README.md          # Ce fichier
-package.json       # Dépendances
+## 📁 Exemple de contenu `.env`
 
-📁 Exemple de contenu du fichier .env
-
+```
 USERNAME=admin
 PASSWORD=secretpassword
 SESSION_SECRET=supersecretkey
-BINANCE_API_KEY=votre_cle_binance
-GOOGLE_AI_API_KEY=votre_cle_google_ai
+BINANCE_API_KEY=ta_cle_api_binance
+GOOGLE_AI_API_KEY=ta_cle_google_ai
 PORT=3000
+```
 
-🚫 Avertissement
+---
 
-Ce projet est un outil personnel. Ne pas l'utiliser en production sans sécurisation avancée. Ne jamais exposer vos clés API publiquement.
+## ⛔️ Avertissement
 
-🎓 Ressources utiles
+Ce projet est strictement personnel et expérimental. Ne jamais exposer vos clés API. Prévoir une authentification sécurisée si vous envisagez une ouverture réseau.
 
-Binance API Docs
+---
 
-Google AI Gemini API
+## 🎓 Liens utiles
 
-TailwindCSS Docs
-
-ExpressJS Docs
-
+* [Binance API](https://binance-docs.github.io/apidocs/spot/en/)
+* [Google Gemini API](https://ai.google.dev/)
+* [TailwindCSS](https://tailwindcss.com/)
+* [ExpressJS](https://expressjs.com/)
