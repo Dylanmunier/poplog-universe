@@ -7,6 +7,9 @@ const { analyzeMarket } = require('./analyze-market');
 const { saveAnalysis } = require('./logAnalysis');
 const { runBacktest } = require('./backtest');
 const { sendTelegramAlert } = require('./notifications');
+const { generateReport } = require('./rapport');
+const fs = require('fs');
+const schedule = require('node-schedule');
 
 dotenv.config({ path: path.join(__dirname, 'config/.env') });
 
@@ -129,6 +132,53 @@ app.post('/api/alert', express.json(), async (req, res) => {
   const result = await sendTelegramAlert(message);
   res.json(result);
 });
+
+// Endpoint pour générer un rapport utilisateur (Markdown)
+app.get('/api/report', (req, res) => {
+  const { symbol = 'BTCUSDT', date } = req.query;
+  if (!date) return res.status(400).json({ error: 'Date requise (YYYY-MM-DD)' });
+  const data = generateReport({ symbol, date });
+  if (data.error) return res.status(404).json(data);
+  let md = fs.readFileSync(path.join(__dirname, 'public', 'rapport.md'), 'utf-8');
+  Object.entries(data).forEach(([k, v]) => {
+    md = md.replace(new RegExp(`{{${k}}}`, 'g'), v);
+  });
+  res.setHeader('Content-Type', 'text/markdown; charset=utf-8');
+  res.send(md);
+});
+
+// --- Simulation de stratégies sur l’historique (multi-paires, IA vs manuel, PnL, drawdown, taux de réussite) ---
+app.get('/api/simulation', (req, res) => {
+  const { symbols = 'BTCUSDT,ETHUSDT', date, takeProfit = 5, stopLoss = 2, mode = 'all' } = req.query;
+  if (!date) return res.status(400).json({ error: 'Date requise (YYYY-MM-DD)' });
+  const symbolList = symbols.split(',');
+  const results = [];
+  symbolList.forEach(symbol => {
+    // Simulation IA
+    const ia = runBacktest({ symbol, date, takeProfit: Number(takeProfit), stopLoss: Number(stopLoss), mode: 'ia' });
+    // Simulation manuelle (benchmark naïf, ex: buy&hold ou random)
+    const manual = runBacktest({ symbol, date, takeProfit: Number(takeProfit), stopLoss: Number(stopLoss), mode: 'manual' });
+    // Génération d’un scénario "réel" (si inconnu, on simule buy&hold sur la période)
+    const real = runBacktest({ symbol, date, takeProfit: Number(takeProfit), stopLoss: Number(stopLoss), mode: 'real' });
+    results.push({ symbol, ia, manual, real });
+  });
+  res.json({ date, results });
+});
+
+// Génération automatique et envoi du rapport utilisateur par Telegram chaque jour à 23h59 (si activé)
+if (process.env.REPORT_AUTO_SEND === 'true') {
+  schedule.scheduleJob('59 23 * * *', async () => {
+    const date = new Date().toISOString().slice(0,10);
+    const data = generateReport({ symbol: 'BTCUSDT', date });
+    if (!data.error) {
+      let md = fs.readFileSync(path.join(__dirname, 'public', 'rapport.md'), 'utf-8');
+      Object.entries(data).forEach(([k, v]) => {
+        md = md.replace(new RegExp(`{{${k}}}`, 'g'), v);
+      });
+      await sendTelegramAlert(`Rapport quotidien\n\n${md.slice(0, 3500)}...`); // Telegram limite à 4096 caractères
+    }
+  });
+}
 
 app.get('/api/ping', (_req, res) => res.json({ status: 'ok' }));
 
