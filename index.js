@@ -33,6 +33,9 @@ app.get('/api/price', async (req, res) => {
 });
 
 // Endpoint d'analyse IA croisée Binance + Google Gemini
+// Exemple d'automatisation : envoi d'une alerte Telegram si une analyse IA détecte une confiance > 90 ou un risque > 7
+// Automatisation : exécution automatique d'un ordre de vente (Take Profit ou Stop Loss) si l'analyse IA le recommande, avec notification Telegram
+// Automatisation DCA dynamique : achat automatique si l'analyse IA recommande un DCA ou si la tendance est baissière avec un signal IA validé
 app.get('/api/analyze', async (req, res) => {
   const symbol = req.query.symbol || 'BTCUSDT';
   try {
@@ -41,6 +44,26 @@ app.get('/api/analyze', async (req, res) => {
     const aiResult = await analyzeMarket({ symbol, price });
     // Journalisation automatique
     saveAnalysis({ symbol, price, ...aiResult, source: 'Gemini' });
+    // Déclenchement d'une alerte si condition critique
+    if ((aiResult.confiance && aiResult.confiance > 90) || (aiResult.risque && aiResult.risque > 7)) {
+      await sendTelegramAlert(`Alerte IA sur ${symbol} :\nConfiance=${aiResult.confiance}%, Risque=${aiResult.risque}\n${JSON.stringify(aiResult)}`);
+    }
+    // Take Profit / Stop Loss automatisé
+    if (aiResult.ordre && process.env.DISABLE_REAL_TRADES !== 'true') {
+      if (aiResult.ordre.type === 'sell' && aiResult.ordre.take_profit) {
+        await client.order({ symbol, side: 'SELL', quantity: aiResult.ordre.volume });
+        await sendTelegramAlert(`Take Profit automatique exécuté sur ${symbol} : volume ${aiResult.ordre.volume}`);
+      }
+      if (aiResult.ordre.type === 'sell' && aiResult.ordre.stop_loss) {
+        await client.order({ symbol, side: 'SELL', quantity: aiResult.ordre.volume });
+        await sendTelegramAlert(`Stop Loss automatique exécuté sur ${symbol} : volume ${aiResult.ordre.volume}`);
+      }
+      // Automatisation DCA dynamique : achat automatique si l'analyse IA recommande un DCA ou si la tendance est baissière avec un signal IA validé
+      if (aiResult.ordre && aiResult.ordre.type === 'buy' && aiResult.ordre.dca && process.env.DISABLE_REAL_TRADES !== 'true') {
+        await client.order({ symbol, side: 'BUY', quantity: aiResult.ordre.volume });
+        await sendTelegramAlert(`DCA automatique exécuté sur ${symbol} : volume ${aiResult.ordre.volume}`);
+      }
+    }
     res.json({ symbol, price, ...aiResult });
   } catch (e) {
     res.status(500).json({ error: 'Erreur analyse IA', details: e.message });
@@ -72,6 +95,8 @@ app.post('/api/order', express.json(), async (req, res) => {
   try {
     const order = await client.order({ symbol, side, quantity });
     saveAnalysis({ symbol, side, quantity, orderId: order.orderId, timestamp: new Date().toISOString(), source: 'Order' });
+    // Alerte Telegram automatique sur exécution réelle
+    await sendTelegramAlert(`Ordre ${side} exécuté sur ${symbol} : quantité ${quantity}\nOrderId: ${order.orderId}`);
     res.json(order);
   } catch (e) {
     res.status(500).json({ error: 'Erreur envoi ordre', details: e.message });
